@@ -1,0 +1,22 @@
+[Unit]
+Description=Connect Text Bot
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+; PermissionsStartOnly=yes
+Environment=HOME=/opt/connect-text-bot
+Environment=GOMAXPROCS=1
+WorkingDirectory=/opt/connect-text-bot
+; ExecStartPre=
+ExecStart=/opt/connect-text-bot/connect-text-bot -config=/opt/connect-text-bot/config/config.yml -bot=/opt/connect-text-bot/config/bot.yml
+; ExecStop=
+; ExecReload=
+Restart=always
+RestartSec=5
+StartLimitInterval=500
+StartLimitBurst=100
+
+[Install]
+WantedBy=multi-user.target

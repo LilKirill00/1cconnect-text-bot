@@ -1,92 +1,439 @@
 # Connect Text Bot
 
-Общий текстовый бот, согласно пожеланию https://1c-connect.atlassian.net/browse/CON-6473
+Данный бот реализует произвольное конфигурироемое текстовое меню на заданных линиях поддержки.
 
-## Getting started
+## Требования к окружению
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+* OS: Linux/Windows
+* Go: 1.17+
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## Сборка и запуск
 
-## Add your files
+### Сборка из исходников
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin http://gitlab.1c-connect.com/bot/connect-text-bot.git
-git branch -M main
-git push -uf origin main
+```bash
+./build.sh
 ```
 
-## Integrate with your tools
+**Note:** Сборка требует установленного окружения!
 
-- [ ] [Set up project integrations](http://gitlab.1c-connect.com/bot/connect-text-bot/-/settings/integrations)
+### Запуск собранной версии
 
-## Collaborate with your team
+```bash
+./connect-text-bot --config=config.yml --bot=bot.yml
+```
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+Где:
 
-## Test and Deploy
+* `--config` - путь к конфигу (путь по умолчанию - `./config/config.yml`).
+* `--bot` - путь к конфигу бота (путь по умолчанию - `./config/bot.yml`).
 
-Use the built-in continuous integration in GitLab.
+**Note:** Бот остлеживает изменения конфигураци меню, содержимое можно менять на горячую, но стоит преварительно 
+проверять через валидатор (например https://onlineyamltools.com/validate-yaml)
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+### Разворачивание бота
 
-***
+Для того чтобы бот работал корректно необходимо выполнить следующие требования и действия:
 
-# Editing this README
+* Необходимо подготовить машину имеющую доступ в интернет и способную принимать HTTP запросы из интернета
+  * Лучшим выбором будет **Linux**, возможно использование виртуальной машины
+* Необходим полный тариф https://1c-connect.com/ru/forpartners/#2
+* Настроить пользователя API в учетной системе 1С-Коннект
+  * Раздел Администрирование -> Настройки API
+  * Создаете нового пользователя
+* Включить **Внешний сервер для обработки данных** в нужной линии
+  * Откройте в УС карточку линии и в разделе **Чат-бот** включите соотвествующую настройку
+* Необходимо получить ID линии для которой была включена внешняя обработка
+  * Выполнит запрос https://1c-connect.atlassian.net/wiki/spaces/PUBLIC/pages/2156429313/v1+line (можно открыть ссылку https://push.1c-connect.com/v1/line/ в браузере и ввести логин/пароль от ранее созданного пользователя)
+  * Найти линию в списке и сохранить ее ID
+* На подготовленный сервер загрузить приложение бота, файл с меню
+* Сконфигурировать и запустить приложение
+  * Создать конфигурационный файл. Пример лежит в файле `config/config.yml.sample` и отредактировать его
+  * Указать в блоке **server** адрес к серверу на котором развернут бот
+    * **Note:** Помните что указанный хост и порт должны быть доступны из сети Интернет
+  * Указать логин/пароль ранее созданного пользователя API
+  * Указать ID линии в разделе **lines**, можно указывать несколько линий
+  * Бот может отправлять файлы, в конфигурационном файле можно указать путь к папке с файлами, далее в меню указывать имена файлов для отправки в чат
+  * Приложение может быть запущено с указание путей к соответсвующим файлам
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!).  Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## Конфигурация меню
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+Конфигурационный файл представляет собой `yml` файл вида:
 
-## Name
-Choose a self-explaining name for your project.
+```yaml
+menus:
+  start:
+    answer:
+      - chat: 'Здравствуйте.'
+    buttons:
+      - button:
+          id: 1
+          text: 'a'
+      - button:
+          id: 2
+          text: 'b'
+      - button:
+          id: 3
+          text: 'nested'
+          menu:
+            id: 'nested_menu'
+            answer:
+              - chat: 'Welcome to nested menu.'
+            buttons:
+              - button:
+                  id: 1
+                  text: 'get information'
+                  chat:
+                    - chat: 'information'
+              - button:
+                  back_button: true
+      - button:
+          id: 4
+          text: 'send file'
+          chat:
+            - file: 'file.pdf'
+              file_text: 'you received file!'
+  final_menu:
+    answer:
+      - chat: 'Могу ли я вам чем-то еще помочь?'
+    buttons:
+      - button:
+          id: 1
+          text: 'Да'
+          goto: 'start'
+      - button:
+          id: 2
+          text: 'Нет'
+          chat:
+            - chat: 'Спасибо за обращение!'
+          close_button: true
+      - button:
+          redirect_button: true
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+back_button:
+  id: 8
+  text: 'Назад'
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+redirect_button:
+  id: 0
+  text: 'Соединить со специалистом'
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+close_button:
+  id: 9
+  text: 'Закрыть обращение'
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+error_message: 'Команда неизвестна. Попробуйте еще раз'
+```
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+**Note:** Директория с файлами задается параметром `files_dir`, в конфигурационном файле программы `config.yml`.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Конфигурация состоит из различных меню. Меню `start` - появляется после первого сообщения от пользователя. `final_menu` - резюмирует
+диалог.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+Каждое меню состоит из блоков `answer` и `buttons`.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+Блок `answer` отвечает за сообщение при переходе на данный раздел.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+При переходе между меню есть возможность отправить текст:
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+```yaml
+menus:
+  start:
+    answer:
+      - chat: 'Здравствуйте.'
+    buttons:
+    ...
+```
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+Или файл:
 
-## License
-For open source projects, say how it is licensed.
+```yaml
+menus:
+  start:
+    answer:
+      - file: 'file.pdf'
+        file_text: 'Сопроводительное письмо к файлу.'
+    buttons:
+    ...
+```
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Или несколько сообщений и файлов:
+
+```yaml
+menus:
+  start:
+    answer:
+      - chat: 'Сообщение 1'
+      - chat: 'Сообщение 2'
+      - file: 'file1.pdf'
+      - file: 'file2.pdf'
+      - chat: 'Сообщение 3'
+    buttons:
+    ...
+```
+
+Также при нажатии на кнопку есть возможность отправить несколько сообщений или файлов:
+
+```yaml
+menus:
+  start:
+    answer:
+      - chat: 'Сообщение 1'
+    buttons:
+      - button:
+          id: 1
+          text: 'Кнопка 1'
+          chat:
+            - chat: 'Сообщение 1'
+            - chat: 'Сообщение 2'
+            - file: 'file1.pdf'
+              file_text: 'Сопроводительное письмо к файлу1'
+            - file: 'file2.pdf'
+              file_text: 'Сопроводительное письмо к файлу2'     
+    ...
+```
+
+Блок `buttons` - представляет собой список кнопок на данном уровне. У кнопки обязательно должен текст `text`.
+
+```yaml
+buttons:
+  - button:
+      id: 1
+      text: 'Текст кнопки' # обязательное поле
+```
+
+Если у кнопки нет пункта `goto`, то после нажатия на неё будет совершен переход в `final_menu`.
+
+```yaml
+buttons:
+  - button:
+      id: 1 # Нажатие на эту кнопку переведёт в final_menu
+      text: 'Кнопка 1'
+  - button:
+      id: 2 # Нажатие на эту кнопку переведёт в some_menu
+      text: 'Кнопка 2'
+      goto: 'some_menu' # Явно указываем в какое меню переведет кнопка
+```
+
+Если у кнопки есть пункт `menu`, то после нажатия на неё будет совершен переход в подменю.
+
+```yaml
+buttons:
+  - button:
+      id: 1 # Нажатие на эту кнопку переведёт в nested_menu
+      text: 'Текст кнопки'
+      chat: 'Сообщение'
+      menu:
+        id: 'nested_menu'
+        ...
+```
+
+### Настройки по умолчанию
+
+Для специальных пунктов меню:
+
+`back_button` - описывает кнопку "Назад", которая переводит меню на уровень назад.
+
+`close_button` - описывает кнопку "Закрыть обращение", которая завершает работу с обращением.
+
+`redirect_button` - описывает кнопку "Перевести на специалиста", которая переводит работу из бот-мению на свободного
+специалиста или ставит обращение в очередь, если нет свободных специалистов.
+
+Можно задать описания по умолчанию:
+
+```yaml
+back_button:
+  id: 8
+  text: 'Назад'
+
+redirect_button:
+  id: 0
+  text: 'Соединить со специалистом'
+
+close_button:
+  id: 9
+  text: 'Закрыть обращение'
+```
+
+Если в конфиге отсутствует `final_menu` будет использовано меню по умолчанию:
+
+```yaml
+final_menu:
+  answer:
+    - chat: 'Могу ли я вам чем-то еще помочь?'
+  buttons:
+    - button:
+        id: 1
+        text: 'Да'
+        goto: 'start'
+    - button:
+        id: 2
+        text: 'Нет'
+        chat:
+          - chat: 'Спасибо за обращение!'
+        close_button: true
+    - button:
+        redirect_button: true
+```
+
+Если в конфиге отсутствует `error_message` будет использовано сообщение по умолчанию:
+
+```yaml
+error_message: 'Команда неизвестна. Попробуйте еще раз'
+```
+
+Можно сделать сделать так, чтобы бот здоровался только один раз. 
+
+Для этого необходимо добавить следующую строчку в конфиг бота (файл `bot.yml`):
+
+```yaml
+first_greeting: true
+```
+
+А также задать текст приветственного сообщения (файл `bot.yml`):
+```yaml
+greeting_message: 'Здравствуйте.'
+```
+
+### Как отправить текст
+
+```yaml
+buttons:
+  - button:
+      id: 1
+      text: 'Текст кнопки'
+      chat:
+        - chat: 'Сообщение'
+```
+
+### Как отправить файл
+
+```yaml
+buttons:
+  - button:
+      id: 1
+      text: 'Текст кнопки'
+      chat:
+        - file: 'file.pdf'
+          file_text: 'Сопроводительное сообщение к файлу.'
+```
+
+### Как закрыть обращение
+
+```yaml
+buttons:
+  - button:
+      id: 9
+      text: 'Закрыть обращение'
+      close_button: true
+```
+
+### Как перевести на специалиста
+
+```yaml
+buttons:
+  - button:
+      id: 0
+      text: 'Перевести на специалиста'
+      redirect_button: true
+```
+
+### Как создать меню
+
+#### Способ №1
+
+```yaml
+menus:
+  start:
+    answer:
+      - chat: 'Здравствуйте.'
+    buttons:
+      - button:
+          id: 1
+          text: 'a'
+          menu:
+            id: 'новое_меню'
+            answer:
+              - chat: 'welcome'
+            buttons:
+              - button:
+                  id: 1
+                  text: 'Текст кнопки'
+  final_menu:
+    answer:
+      - chat: 'Могу ли я вам чем-то еще помочь?'
+    buttons:
+      - button:
+          id: 1
+          text: 'Да'
+          goto: 'start'
+      - button:
+          id: 2
+          text: 'Нет'
+          chat:
+            - chat: 'Спасибо за обращение!'
+          close_button: true
+      - button:
+          redirect_button: true
+back_button:
+  id: 8
+  text: 'Назад'
+
+redirect_button:
+  id: 0
+  text: 'Соединить со специалистом'
+
+close_button:
+  id: 9
+  text: 'Закрыть обращение'
+```
+
+#### Способ №2
+
+```yaml
+menus:
+  start:
+    answer:
+      - chat: 'Здравствуйте.'
+    buttons:
+      - button:
+          id: 1
+          text: 'a'
+          goto: 'новое_меню'
+
+  новое_меню:
+    answer:
+      - chat: 'welcome'
+    buttons:
+      - button:
+          id: 1
+          text: 'Текст кнопки'
+
+  final_menu:
+    answer:
+      - chat: 'Могу ли я вам чем-то еще помочь?'
+    buttons:
+      - button:
+          id: 1
+          text: 'Да'
+          goto: 'start'
+      - button:
+          id: 2
+          text: 'Нет'
+          chat:
+            - chat: 'Спасибо за обращение!'
+          close_button: true
+      - button:
+          redirect_button: true
+back_button:
+  id: 8
+  text: 'Назад'
+
+redirect_button:
+  id: 0
+  text: 'Соединить со специалистом'
+
+close_button:
+  id: 9
+  text: 'Закрыть обращение'
+```
