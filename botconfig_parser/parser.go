@@ -1,13 +1,14 @@
 package botconfig_parser
 
 import (
-	"connect-text-bot/bot/requests"
-	"connect-text-bot/database"
-	"connect-text-bot/logger"
 	"fmt"
 	"io/ioutil"
 	"strings"
 	"sync"
+
+	"connect-text-bot/bot/requests"
+	"connect-text-bot/database"
+	"connect-text-bot/logger"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/yaml.v3"
@@ -79,6 +80,19 @@ func defaultFinalMenu() *Menu {
 	}
 }
 
+func defaultFailQnaMenu() *Menu {
+	return &Menu{
+		Answer: []*Answer{
+			{Chat: "Я Вас не понимаю.\n\nПопробуете еще раз или перевести обращение на специалиста?"},
+		},
+		Buttons: []*Buttons{
+			{Button{ButtonID: "1", ButtonText: "Продолжить", BackButton: true}},
+			{Button{ButtonID: "2", ButtonText: "Закрыть обращение", Chat: []*Answer{{Chat: "Спасибо за обращение!"}}, CloseButton: true}},
+			{Button{ButtonID: "0", ButtonText: "Соединить со специалистом", RedirectButton: true}},
+		},
+	}
+}
+
 func CopyMap(m map[string]*Menu) map[string]*Menu {
 	cp := make(map[string]*Menu)
 	for k, v := range m {
@@ -98,6 +112,8 @@ func nestedToFlat(main *Levels, nested *Levels) (err error) {
 					menu := &Menu{
 						Answer:  b.Button.NestedMenu.Answer,
 						Buttons: b.Button.NestedMenu.Buttons,
+
+						QnaDisable: b.Button.NestedMenu.QnaDisable,
 					}
 
 					main.Menu[b.Button.NestedMenu.ID] = menu
@@ -133,6 +149,11 @@ func (l *Levels) checkMenus() error {
 	}
 	if _, ok := l.Menu[database.FINAL]; !ok {
 		l.Menu[database.FINAL] = defaultFinalMenu()
+	}
+	if l.UseQNA.Enabled {
+		if _, ok := l.Menu[database.FAIL_QNA]; !ok {
+			l.Menu[database.FAIL_QNA] = defaultFailQnaMenu()
+		}
 	}
 	if l.ErrorMessage == "" {
 		l.ErrorMessage = "Команда неизвестна. Попробуйте еще раз"

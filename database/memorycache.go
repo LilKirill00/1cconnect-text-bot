@@ -1,8 +1,9 @@
 package database
 
 import (
-	"connect-text-bot/logger"
 	"time"
+
+	"connect-text-bot/logger"
 
 	"github.com/allegro/bigcache/v3"
 	"github.com/gin-gonic/gin"

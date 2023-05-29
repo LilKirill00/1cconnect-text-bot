@@ -11,4 +11,5 @@ const (
 	GREETINGS = "greetings"
 	START     = "start"
 	FINAL     = "final_menu"
+	FAIL_QNA  = "fail_qna_menu"
 )

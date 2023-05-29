@@ -1,7 +1,6 @@
 package main
 
 import (
-	"connect-text-bot/botconfig_parser"
 	"context"
 	"flag"
 	"log"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"connect-text-bot/bot"
+	"connect-text-bot/botconfig_parser"
 	"connect-text-bot/config"
 	"connect-text-bot/database"
 	"connect-text-bot/logger"

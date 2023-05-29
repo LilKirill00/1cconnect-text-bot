@@ -1,8 +1,9 @@
 package config
 
 import (
-	"connect-text-bot/logger"
 	"os"
+
+	"connect-text-bot/logger"
 
 	"gopkg.in/yaml.v2"
 )

@@ -1,12 +1,6 @@
 package bot
 
 import (
-	"connect-text-bot/bot/messages"
-	"connect-text-bot/bot/requests"
-	"connect-text-bot/botconfig_parser"
-	"connect-text-bot/config"
-	"connect-text-bot/database"
-	"connect-text-bot/logger"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,8 +11,16 @@ import (
 	"strings"
 	"time"
 
+	"connect-text-bot/bot/messages"
+	"connect-text-bot/bot/requests"
+	"connect-text-bot/botconfig_parser"
+	"connect-text-bot/config"
+	"connect-text-bot/database"
+	"connect-text-bot/logger"
+
 	"github.com/allegro/bigcache/v3"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func Receive(c *gin.Context) {
@@ -168,9 +170,14 @@ func processMessage(c *gin.Context, msg *messages.Message, chatState *database.C
 	menu := c.MustGet("menus").(*botconfig_parser.Levels)
 	time.Sleep(250 * time.Millisecond)
 
+	var err error
+
 	switch msg.MessageType {
 	// Первый запуск.
 	case messages.MESSAGE_TREATMENT_START_BY_USER:
+		if chatState.CurrentState == database.START {
+			return chatState.CurrentState, nil
+		}
 		return database.GREETINGS, nil
 
 	// Нажатие меню ИЛИ Любое сообщение (текст, файл, попытка звонка).
@@ -179,11 +186,11 @@ func processMessage(c *gin.Context, msg *messages.Message, chatState *database.C
 		messages.MESSAGE_TREATMENT_START_BY_SPEC,
 		messages.MESSAGE_TREATMENT_CLOSE,
 		messages.MESSAGE_TREATMENT_CLOSE_ACTIVE:
-		err := msg.Start(cnf)
+		err = msg.Start(cnf)
 		return database.GREETINGS, err
 
 	case messages.MESSAGE_NO_FREE_SPECIALISTS:
-		err := msg.RerouteTreatment(c)
+		err = msg.RerouteTreatment(c)
 		return database.GREETINGS, err
 
 	// Пользователь отправил сообщение.
@@ -194,19 +201,49 @@ func processMessage(c *gin.Context, msg *messages.Message, chatState *database.C
 		switch chatState.CurrentState {
 
 		case database.GREETINGS:
+			switch text {
+			case "меню", "menu":
+				// Ходим дальше
+			default:
+				currentMenu := database.START
+				if cm, ok := menu.Menu[currentMenu]; ok {
+					if !cm.QnaDisable && menu.UseQNA.Enabled {
+						// logger.Info("QNA", msg, chatState)
+						qnaText, isClose, request_id, result_id := getMessageFromQNA(msg, cnf)
+						if qnaText != "" {
+							// Была подсказка
+							go msg.QnaSelected(cnf, request_id, result_id)
+
+							if isClose {
+								err = msg.Send(c, qnaText, nil)
+								msg.CloseTreatment(c)
+								return currentMenu, err
+							}
+
+							err = msg.Send(c, qnaText, menu.GenKeyboard(currentMenu))
+							return currentMenu, err
+						}
+
+						SendAnswer(c, msg, menu, database.FAIL_QNA, cnf.FilesDir)
+						return database.FAIL_QNA, err
+					}
+				}
+			}
+
 			if menu.FirstGreeting {
 				msg.Send(c, menu.GreetingMessage, nil)
+				time.Sleep(time.Second)
 			}
 			SendAnswer(c, msg, menu, database.START, cnf.FilesDir)
 			return database.START, nil
 		default:
-			var err error
 			state := getState(c, msg)
 			currentMenu := state.CurrentState
 
 			// В редисе может остаться состояние которого, нет в конфиге.
-			if _, ok := menu.Menu[currentMenu]; !ok {
-				logger.Warning("неизвестное состояние: %s", currentMenu)
+			cm, ok := menu.Menu[currentMenu]
+			if !ok {
+				logger.Warning("неизвестное состояние: ", currentMenu)
 				err = msg.Send(c, menu.ErrorMessage, menu.GenKeyboard(database.START))
 				return database.GREETINGS, err
 			}
@@ -256,10 +293,45 @@ func processMessage(c *gin.Context, msg *messages.Message, chatState *database.C
 				return goTo, err
 
 			} else { // Произвольный текст
+				if !cm.QnaDisable && menu.UseQNA.Enabled {
+					// logger.Info("QNA", msg, chatState)
+					qnaText, isClose, request_id, result_id := getMessageFromQNA(msg, cnf)
+					if qnaText != "" {
+						// Была подсказка
+						go msg.QnaSelected(cnf, request_id, result_id)
+
+						if isClose {
+							err = msg.Send(c, qnaText, nil)
+							msg.CloseTreatment(c)
+							return state.CurrentState, err
+						}
+
+						err = msg.Send(c, qnaText, menu.GenKeyboard(currentMenu))
+						return state.CurrentState, err
+					}
+
+					SendAnswer(c, msg, menu, database.FAIL_QNA, cnf.FilesDir)
+					return database.FAIL_QNA, err
+				}
 				err = msg.Send(c, menu.ErrorMessage, menu.GenKeyboard(currentMenu))
 				return state.CurrentState, err
 			}
 		}
 	}
-	return database.GREETINGS, errors.New("I don't know what i should do!")
+	return database.GREETINGS, errors.New("i don't know what i should do")
+}
+
+// getMessageFromQNA - Метод возвращает ответ с Базы Знаний, и флаг, если это сообщение закрывает обращение.
+func getMessageFromQNA(msg *messages.Message, cnf *config.Conf) (string, bool, uuid.UUID, uuid.UUID) {
+	result_id := uuid.Nil
+	qnaAnswer := msg.GetQNA(cnf, false, false)
+
+	for _, v := range qnaAnswer.Answers {
+		if v.Accuracy > 0 {
+			result_id = v.ID
+			return v.Text, v.AnswerSource == "GOODBYES", qnaAnswer.RequestID, result_id
+		}
+	}
+
+	return "", false, result_id, result_id
 }

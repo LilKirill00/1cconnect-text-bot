@@ -50,22 +50,26 @@ type (
 	}
 
 	AutofaqAnswer struct {
-		Text         string  `json:"text"`
-		Accuracy     float32 `json:"accuracy"`
-		AnswerSource string  `json:"answer_source"`
+		ID           uuid.UUID `json:"id"`
+		Text         string    `json:"text"`
+		Accuracy     float32   `json:"accuracy"`
+		AnswerSource string    `json:"answer_source"`
 	}
 
 	AutofaqRequestBody struct {
-		Question string          `json:"question"`
-		Answers  []AutofaqAnswer `json:"answers"`
+		RequestID uuid.UUID       `json:"request_id"`
+		Question  string          `json:"question"`
+		Answers   []AutofaqAnswer `json:"answers"`
 	}
 )
 
 // GetQNA - Метод позволяет получить варианты ответов на вопрос пользователя в сервисе AutoFAQ.
-func (msg *Message) GetQNA(cnf *config.Conf) *AutofaqRequestBody {
-	data := requests.DropKeyboardRequest{
-		LineID: msg.LineId,
-		UserId: msg.UserId,
+func (msg *Message) GetQNA(cnf *config.Conf, skip_greetings, skip_goodbyes bool) *AutofaqRequestBody {
+	data := requests.Qna{
+		LineID:        msg.LineId,
+		UserId:        msg.UserId,
+		SkipGreetings: skip_greetings,
+		SkipGoodbyes:  skip_goodbyes,
 	}
 
 	jsonData, err := json.Marshal(data)
@@ -88,6 +92,24 @@ func (msg *Message) GetQNA(cnf *config.Conf) *AutofaqRequestBody {
 	logger.Debug("text - GetQNA", resp)
 
 	return resp
+}
+
+// Отметить выбранный вариант подсказки
+func (msg *Message) QnaSelected(cnf *config.Conf, request_id, result_id uuid.UUID) {
+	data := requests.Selected{
+		Request_ID: request_id,
+		Result_ID:  result_id,
+	}
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		logger.Warning("text - GetQNA", err)
+	}
+
+	body, err := client.Invoke(cnf, http.MethodPut, "/line/qna/selected/", "application/json", jsonData)
+	if err != nil {
+		logger.Warning("text - QnaSelected", err, body)
+	}
 }
 
 func (msg *Message) Start(cnf *config.Conf) error {

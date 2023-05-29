@@ -3,6 +3,8 @@ package botconfig_parser
 type Levels struct {
 	Menu map[string]*Menu `yaml:"menus"`
 
+	UseQNA QNA `yaml:"use_qna"`
+
 	BackButton     *Button `yaml:"back_button"`
 	CloseButton    *Button `yaml:"close_button"`
 	RedirectButton *Button `yaml:"redirect_button"`
@@ -15,6 +17,12 @@ type Levels struct {
 type Menu struct {
 	Answer  []*Answer  `yaml:"answer"`
 	Buttons []*Buttons `yaml:"buttons"`
+
+	QnaDisable bool `yaml:"qna_disable"`
+}
+
+type QNA struct {
+	Enabled bool `yaml:"enabled"`
 }
 
 type Answer struct {
@@ -31,6 +39,8 @@ type NestedMenu struct {
 	ID      string     `yaml:"id"`
 	Answer  []*Answer  `yaml:"answer"`
 	Buttons []*Buttons `yaml:"buttons"`
+
+	QnaDisable bool `yaml:"qna_disable"`
 }
 
 type Button struct {
