@@ -1,6 +1,13 @@
 package requests
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
+// Описание объекта - Пользователи
+type Users []User
 
 // Описание объекта - Пользователь
 type User struct {
@@ -17,10 +24,24 @@ type User struct {
 	Phone              string    `json:"phone"`
 }
 
+// Описание объекта - Компетенции
+type Competences []Competence
+
 // Описание объекта - Компетенция
 type Competence struct {
 	LineId       uuid.UUID `json:"line_id" format:"uuid" example:"bb296731-3d58-4c4a-8227-315bdc2bf3ff"`
 	SpecialistId uuid.UUID `json:"specialist_id" format:"uuid" example:"bb296731-3d58-4c4a-8227-315bdc2bf3ff"`
 	PoolPriority int8      `json:"pool_priority"`
 	IsFranchSpec bool      `json:"is_franch_spec"`
+}
+
+// Описание объекта - Линии, подключенные пользователям
+type Subscriptions []Subscription
+type Subscription struct {
+	LineId uuid.UUID `json:"line_id" format:"uuid" example:"bb296731-3d58-4c4a-8227-315bdc2bf3ff"`
+	UserId uuid.UUID `json:"user_id" format:"uuid" example:"bb296731-3d58-4c4a-8227-315bdc2bf3ff"`
+	// Дата начала подписки
+	SubscriptionSet time.Time `json:"subscription_set"`
+	// Дата окончания подписки. nil когда бессрочная подписка
+	SubscriptionExpireAt *time.Time `json:"subscription_expire_at"`
 }

@@ -57,7 +57,10 @@ func DeleteHook(cnf *config.Conf, lineId uuid.UUID) (content []byte, err error) 
 
 func Invoke(cnf *config.Conf, method string, methodUrl string, contentType string, body []byte) (content []byte, err error) {
 	methodUrl = strings.Trim(methodUrl, "/")
-	reqUrl := cnf.Connect.Server + "/v1/" + methodUrl + "/"
+	reqUrl := cnf.Connect.Server + "/v1/" + methodUrl
+	if !strings.Contains(methodUrl, "?") {
+		reqUrl += "/"
+	}
 
 	req, err := http.NewRequest(method, reqUrl, bytes.NewBuffer(body))
 	if err != nil {
