@@ -301,7 +301,7 @@ func processMessage(c *gin.Context, msg *messages.Message, chatState *database.C
 				if btn.RerouteButton != nil && *btn.RerouteButton != uuid.Nil {
 					r, err := msg.GetSubscriptions(c, *btn.RerouteButton)
 					if len(r) == 0 {
-						msg.Send(c, "Выбраная линия пользователю недоступна", nil)
+						msg.Send(c, "Выбраная линия недоступна", nil)
 						goTo = database.FINAL
 						SendAnswer(c, msg, menu, goTo, cnf.FilesDir)
 						return goTo, err
