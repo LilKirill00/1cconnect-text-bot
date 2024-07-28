@@ -278,19 +278,11 @@ func (msg *Message) GetSubscriber(c *gin.Context) (content requests.User, err er
 }
 
 // Получение списка линий, подключенных пользователям
-func (msg *Message) GetSubscriptions(c *gin.Context, client_id *uuid.UUID, counterpart_owner_id *uuid.UUID, line_id *uuid.UUID) (content requests.Subscriptions, err error) {
+func (msg *Message) GetSubscriptions(c *gin.Context, line_id uuid.UUID) (content requests.Subscriptions, err error) {
 	cnf := c.MustGet("cnf").(*config.Conf)
 	var v = url.Values{}
 	v.Add("user_id", msg.UserId.String())
-	if client_id != nil {
-		v.Add("client_id", client_id.String())
-	}
-	if counterpart_owner_id != nil {
-		v.Add("counterpart_owner_id", counterpart_owner_id.String())
-	}
-	if line_id != nil {
-		v.Add("line_id", line_id.String())
-	}
+	v.Add("line_id", line_id.String())
 	var url = "/line/subscriptions" + "?" + v.Encode()
 
 	r, err := client.Invoke(cnf, "GET", url, "application/json", nil)
