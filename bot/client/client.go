@@ -47,6 +47,9 @@ func SetHook(cnf *config.Conf, lineId uuid.UUID) (content []byte, err error) {
 		Url:  cnf.Server.Host + "/connect-push/receive/",
 	}
 	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
 
 	return Invoke(cnf, "POST", "/hook/", "application/json", jsonData)
 }
@@ -56,11 +59,17 @@ func DeleteHook(cnf *config.Conf, lineId uuid.UUID) (content []byte, err error) 
 }
 
 func Invoke(cnf *config.Conf, method string, methodUrl string, contentType string, body []byte) (content []byte, err error) {
-	methodUrl = strings.Trim(methodUrl, "/")
-	reqUrl := cnf.Connect.Server + "/v1/" + methodUrl
-	if !strings.Contains(methodUrl, "?") {
-		reqUrl += "/"
+	// вариант при котором сначало уберем все '/' слева от url
+	// а потом проверим, если есть справа '/' то убираем все и возвращаем 1 обратно
+	methodUrl = strings.TrimLeft(methodUrl, "/")
+	if len(methodUrl) > len(strings.TrimRight(methodUrl, "/")) {
+		methodUrl = strings.TrimRight(methodUrl, "/") + "/"
 	}
+	reqUrl := cnf.Connect.Server + "/v1/" + methodUrl
+
+	// original
+	// methodUrl = strings.Trim(methodUrl, "/")
+	// reqUrl := cnf.Connect.Server + "/v1/" + methodUrl + "/"
 
 	req, err := http.NewRequest(method, reqUrl, bytes.NewBuffer(body))
 	if err != nil {
