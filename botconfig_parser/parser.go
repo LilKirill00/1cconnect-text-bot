@@ -161,30 +161,30 @@ func (l *Levels) checkMenus() error {
 			return fmt.Errorf("отсутствуют кнопки: %s %#v", k, v)
 		}
 		for _, b := range v.Buttons {
-			// Если кнопка CLOSE | REDIRECT | ... | BACK то применяем к ней дефолтные настройки
-			var modifycatorCount = 0
+			// Если кнопка с модификацией то применяем к ней дефолтные настройки
+			var modificationCount = 0
 			if b.Button.CloseButton && l.CloseButton != nil {
 				b.Button.SetDefault(*l.CloseButton)
-				modifycatorCount++
+				modificationCount++
 			}
 			if b.Button.RedirectButton && l.RedirectButton != nil {
 				b.Button.SetDefault(*l.RedirectButton)
-				modifycatorCount++
+				modificationCount++
 			}
 			if b.Button.BackButton && l.BackButton != nil {
 				b.Button.SetDefault(*l.BackButton)
-				modifycatorCount++
+				modificationCount++
 			}
 			if b.Button.AppointSpecButton != nil && *b.Button.AppointSpecButton != uuid.Nil && l.AppointSpecButton != nil {
 				b.Button.SetDefault(*l.AppointSpecButton)
-				modifycatorCount++
+				modificationCount++
 			}
 			if b.Button.RerouteButton != nil && *b.Button.RerouteButton != uuid.Nil && l.RerouteButton != nil {
 				b.Button.SetDefault(*l.RerouteButton)
-				modifycatorCount++
+				modificationCount++
 			}
 
-			if modifycatorCount > 1 {
+			if modificationCount > 1 {
 				return fmt.Errorf("кнопка может иметь только один модификатор: %s %#v", k, b)
 			}
 			if b.Button.Goto != "" && b.Button.BackButton {
