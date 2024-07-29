@@ -17,8 +17,8 @@ type (
 		Name               string    `json:"name"`
 		Surname            string    `json:"surname"`
 		Patronymic         string    `json:"patronymic"`
-		AvatarUrl          *string   `json:"avatar_url"`
-		AvatarSmallUrl     *string   `json:"avatar_small_url"`
+		AvatarUrl          string    `json:"avatar_url,omitempty"`
+		AvatarSmallUrl     string    `json:"avatar_small_url,omitempty"`
 		Email              string    `json:"email"`
 		Post               string    `json:"post"`
 		Phone              string    `json:"phone"`
@@ -43,6 +43,6 @@ type (
 		// Дата начала подписки
 		SubscriptionSet time.Time `json:"subscription_set"`
 		// Дата окончания подписки. nil когда бессрочная подписка
-		SubscriptionExpireAt *time.Time `json:"subscription_expire_at"`
+		SubscriptionExpireAt time.Time `json:"subscription_expire_at,omitempty"`
 	}
 )
