@@ -246,7 +246,7 @@ func (msg *Message) GetSpecialistAvailable(c *gin.Context, spec_id uuid.UUID) (a
 }
 
 // Перевод обращения на другую линию
-func (msg *Message) Reroute(c *gin.Context, line_id uuid.UUID, quote *string) error {
+func (msg *Message) Reroute(c *gin.Context, line_id uuid.UUID, quote string) error {
 	cnf := c.MustGet("cnf").(*config.Conf)
 	data := requests.TreatmentReroute{
 		LineID:   msg.LineId,

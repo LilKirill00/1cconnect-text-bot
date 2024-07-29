@@ -306,7 +306,7 @@ func processMessage(c *gin.Context, msg *messages.Message, chatState *database.C
 						SendAnswer(c, msg, menu, goTo, cnf.FilesDir)
 						return goTo, err
 					}
-					err = msg.Reroute(c, *btn.RerouteButton, nil)
+					err = msg.Reroute(c, *btn.RerouteButton, "")
 					return database.GREETINGS, err
 				}
 
