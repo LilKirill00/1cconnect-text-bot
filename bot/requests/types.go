@@ -23,9 +23,7 @@ type (
 		Post               string    `json:"post"`
 		Phone              string    `json:"phone"`
 	}
-)
 
-type (
 	// Описание объекта - Компетенции
 	Competences []Competence
 	// Описание объекта - Компетенция
@@ -35,9 +33,7 @@ type (
 		PoolPriority int8      `json:"pool_priority"`
 		IsFranchSpec bool      `json:"is_franch_spec"`
 	}
-)
 
-type (
 	// Описание объекта - Линии, подключенные пользователям
 	Subscriptions []Subscription
 	// Описание объекта - Линия, подключенная пользователю
