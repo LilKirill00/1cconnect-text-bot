@@ -79,7 +79,7 @@ func (msg *Message) GetQNA(cnf *config.Conf, skip_greetings, skip_goodbyes bool)
 		logger.Warning("text - GetQNA", err)
 	}
 
-	body, err := client.Invoke(cnf, http.MethodPost, "/line/qna/", "application/json", jsonData)
+	body, err := client.Invoke(cnf, http.MethodPost, "/line/qna/", nil, "application/json", jsonData)
 	if err != nil {
 		logger.Warning("text - GetQNA", err)
 	}
@@ -108,7 +108,7 @@ func (msg *Message) QnaSelected(cnf *config.Conf, request_id, result_id uuid.UUI
 		logger.Warning("text - GetQNA", err)
 	}
 
-	body, err := client.Invoke(cnf, http.MethodPut, "/line/qna/selected/", "application/json", jsonData)
+	body, err := client.Invoke(cnf, http.MethodPut, "/line/qna/selected/", nil, "application/json", jsonData)
 	if err != nil {
 		logger.Warning("text - QnaSelected", err, body)
 	}
@@ -125,7 +125,7 @@ func (msg *Message) Start(cnf *config.Conf) error {
 		return err
 	}
 
-	_, err = client.Invoke(cnf, http.MethodPost, "/line/drop/keyboard/", "application/json", jsonData)
+	_, err = client.Invoke(cnf, http.MethodPost, "/line/drop/keyboard/", nil, "application/json", jsonData)
 
 	return err
 }
@@ -147,7 +147,7 @@ func (msg *Message) Send(c *gin.Context, text string, keyboard *[][]requests.Key
 		return err
 	}
 
-	_, err = client.Invoke(cnf, http.MethodPost, "/line/send/message/", "application/json", jsonData)
+	_, err = client.Invoke(cnf, http.MethodPost, "/line/send/message/", nil, "application/json", jsonData)
 
 	return err
 }
@@ -165,7 +165,7 @@ func (msg *Message) RerouteTreatment(c *gin.Context) error {
 		return err
 	}
 
-	_, err = client.Invoke(cnf, http.MethodPost, "/line/appoint/start/", "application/json", jsonData)
+	_, err = client.Invoke(cnf, http.MethodPost, "/line/appoint/start/", nil, "application/json", jsonData)
 
 	return err
 }
@@ -186,7 +186,7 @@ func (msg *Message) CloseTreatment(c *gin.Context) error {
 		return err
 	}
 
-	_, err = client.Invoke(cnf, http.MethodPost, "/line/drop/treatment/", "application/json", jsonData)
+	_, err = client.Invoke(cnf, http.MethodPost, "/line/drop/treatment/", nil, "application/json", jsonData)
 
 	return err
 }
@@ -203,7 +203,7 @@ func (msg *Message) StartAndReroute(cnf *config.Conf) error {
 		return err
 	}
 
-	_, err = client.Invoke(cnf, http.MethodPost, "/line/appoint/start/", "application/json", jsonData)
+	_, err = client.Invoke(cnf, http.MethodPost, "/line/appoint/start/", nil, "application/json", jsonData)
 
 	return err
 }
@@ -223,7 +223,7 @@ func (msg *Message) AppointSpec(c *gin.Context, appoint_spec uuid.UUID) error {
 		return err
 	}
 
-	_, err = client.Invoke(cnf, http.MethodPost, "/line/appoint/spec/", "application/json", jsonData)
+	_, err = client.Invoke(cnf, http.MethodPost, "/line/appoint/spec/", nil, "application/json", jsonData)
 
 	return err
 }
@@ -232,7 +232,7 @@ func (msg *Message) AppointSpec(c *gin.Context, appoint_spec uuid.UUID) error {
 func (msg *Message) GetSpecialistAvailable(c *gin.Context, spec_id uuid.UUID) (available bool, err error) {
 	cnf := c.MustGet("cnf").(*config.Conf)
 
-	r, err := client.Invoke(cnf, http.MethodGet, "/line/specialists/"+msg.LineId.String()+"/available/", "application/json", nil)
+	r, err := client.Invoke(cnf, http.MethodGet, "/line/specialists/"+msg.LineId.String()+"/available/", nil, "application/json", nil)
 	if err != nil {
 		return false, err
 	}
@@ -260,7 +260,7 @@ func (msg *Message) Reroute(c *gin.Context, line_id uuid.UUID, quote string) err
 		return err
 	}
 
-	_, err = client.Invoke(cnf, http.MethodPost, "/line/reroute/", "application/json", jsonData)
+	_, err = client.Invoke(cnf, http.MethodPost, "/line/reroute/", nil, "application/json", jsonData)
 
 	return err
 }
@@ -268,7 +268,7 @@ func (msg *Message) Reroute(c *gin.Context, line_id uuid.UUID, quote string) err
 // Получение информации о пользователе
 func (msg *Message) GetSubscriber(c *gin.Context) (content requests.User, err error) {
 	cnf := c.MustGet("cnf").(*config.Conf)
-	r, err := client.Invoke(cnf, http.MethodGet, "/line/subscriber/"+msg.UserId.String()+"/", "application/json", nil)
+	r, err := client.Invoke(cnf, http.MethodGet, "/line/subscriber/"+msg.UserId.String()+"/", nil, "application/json", nil)
 	if err != nil {
 		return requests.User{}, err
 	}
@@ -283,9 +283,8 @@ func (msg *Message) GetSubscriptions(c *gin.Context, line_id uuid.UUID) (content
 	var v = url.Values{}
 	v.Add("user_id", msg.UserId.String())
 	v.Add("line_id", line_id.String())
-	var url = "/line/subscriptions" + "?" + v.Encode()
 
-	r, err := client.Invoke(cnf, http.MethodGet, url, "application/json", nil)
+	r, err := client.Invoke(cnf, http.MethodGet, "/line/subscriptions/", v, "application/json", nil)
 	if err != nil {
 		return requests.Subscriptions{}, err
 	}
@@ -297,7 +296,7 @@ func (msg *Message) GetSubscriptions(c *gin.Context, line_id uuid.UUID) (content
 // Получение информации о специалисте
 func (msg *Message) GetSpecialist(c *gin.Context, spec_id uuid.UUID) (content requests.User, err error) {
 	cnf := c.MustGet("cnf").(*config.Conf)
-	r, err := client.Invoke(cnf, http.MethodGet, "/line/specialist/"+spec_id.String()+"/", "application/json", nil)
+	r, err := client.Invoke(cnf, http.MethodGet, "/line/specialist/"+spec_id.String()+"/", nil, "application/json", nil)
 	if err != nil {
 		return requests.User{}, err
 	}
@@ -364,9 +363,9 @@ func (msg *Message) SendFile(c *gin.Context, isImage bool, fileName string, file
 	}
 
 	if isImage {
-		_, err = client.Invoke(cnf, http.MethodPost, "/line/send/image/", writer.FormDataContentType(), body.Bytes())
+		_, err = client.Invoke(cnf, http.MethodPost, "/line/send/image/", nil, writer.FormDataContentType(), body.Bytes())
 		return err
 	}
-	_, err = client.Invoke(cnf, http.MethodPost, "/line/send/file/", writer.FormDataContentType(), body.Bytes())
+	_, err = client.Invoke(cnf, http.MethodPost, "/line/send/file/", nil, writer.FormDataContentType(), body.Bytes())
 	return err
 }
