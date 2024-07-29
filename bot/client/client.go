@@ -51,11 +51,11 @@ func SetHook(cnf *config.Conf, lineId uuid.UUID) (content []byte, err error) {
 		return nil, err
 	}
 
-	return Invoke(cnf, "POST", "/hook/", "application/json", jsonData)
+	return Invoke(cnf, http.MethodPost, "/hook/", "application/json", jsonData)
 }
 
 func DeleteHook(cnf *config.Conf, lineId uuid.UUID) (content []byte, err error) {
-	return Invoke(cnf, "DELETE", "/hook/bot/"+lineId.String()+"/", "application/json", nil)
+	return Invoke(cnf, http.MethodDelete, "/hook/bot/"+lineId.String()+"/", "application/json", nil)
 }
 
 func Invoke(cnf *config.Conf, method string, methodUrl string, contentType string, body []byte) (content []byte, err error) {
