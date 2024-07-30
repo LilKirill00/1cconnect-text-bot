@@ -1,2 +1,2 @@
 ./build.sh
-./connect-text-bot $1
+exec -a connect-text-bot ./connect-text-bot $1
