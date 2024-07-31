@@ -320,17 +320,20 @@ func processMessage(c *gin.Context, msg *messages.Message, chatState *database.C
 					if err != nil {
 						return finalSend(c, msg, menu, cnf.FilesDir, "", err)
 					}
+
 					// формируем шаблон
 					templ, err := template.New("cmd").Parse(btn.ExecButton)
 					if err != nil {
 						return finalSend(c, msg, menu, cnf.FilesDir, "", err)
 					}
+
 					// заполняем шаблон
 					var templOutput bytes.Buffer
 					err = templ.Execute(&templOutput, userData)
 					if err != nil {
 						return finalSend(c, msg, menu, cnf.FilesDir, "", err)
 					}
+
 					// выполняем команду на устройстве
 					var cmd *exec.Cmd
 					switch runtime.GOOS {
@@ -343,6 +346,7 @@ func processMessage(c *gin.Context, msg *messages.Message, chatState *database.C
 					if err != nil {
 						return finalSend(c, msg, menu, cnf.FilesDir, "Ошибка: "+err.Error(), err)
 					}
+
 					// выводим результат и завершаем
 					msg.Send(c, string(cmdOutput), nil)
 					goTo := database.FINAL
