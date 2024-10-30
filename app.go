@@ -25,9 +25,10 @@ func main() {
 	var (
 		cnf = &config.Conf{}
 
-		configFile = flag.String("config", "./config/config.yml", "Usage: -config=<config_file>")
-		botConfig  = flag.String("bot", "./config/bot.yml", "Usage: -bot=<botConfig_file>")
-		debug      = flag.Bool("debug", false, "Print debug information on stderr")
+		configFile   = flag.String("config", "./config/config.yml", "Usage: -config=<config_file>")
+		botConfig    = flag.String("bot", "./config/bot.yml", "Usage: -bot=<botConfig_file>")
+		loggerConfig = flag.String("logger", "./config/logger.yml", "Usage: -logger=<loggerConfig_file>")
+		debug        = flag.Bool("debug", false, "Print debug information on stderr")
 	)
 
 	flag.Parse()
@@ -36,7 +37,8 @@ func main() {
 	cnf.RunInDebug = *debug
 	cnf.BotConfig = *botConfig
 
-	logger.InitLogger(*debug)
+	logFile := logger.InitLogger(*debug, loggerConfig)
+	defer logFile.Close()
 	logger.Info("Application starting...")
 
 	if *debug {
@@ -53,6 +55,7 @@ func main() {
 		config.Inject("cnf", cnf),
 		database.InjectInMemoryCache("cache", cache),
 		botconfig_parser.InjectLevels("menus", menus),
+		gin.LoggerWithWriter(logFile),
 	)
 
 	bot.InitHooks(app, cnf)
@@ -64,7 +67,7 @@ func main() {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Listen: %s\n", err)
+			log.Fatalf(logger.CritColor("Listen: %s\n"), err)
 		}
 	}()
 
@@ -81,7 +84,7 @@ func main() {
 				if !ok {
 					return
 				}
-				log.Println("event:", event)
+				logger.Event(event)
 				if event.Op&fsnotify.Create == fsnotify.Create || event.Op&fsnotify.Rename == fsnotify.Rename {
 					if event.Name != "" {
 						if err := watcher.Add(event.Name); err != nil {
@@ -147,7 +150,7 @@ func main() {
 				defer cancel()
 
 				if err := srv.Shutdown(ctx); err != nil {
-					log.Fatal("App forced to shutdown:", err)
+					log.Fatal(logger.CritColor("App forced to shutdown:", err))
 				}
 
 				logger.Info("Application stopped correctly!")

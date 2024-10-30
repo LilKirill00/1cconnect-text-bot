@@ -4,6 +4,7 @@ go 1.22
 
 require (
 	github.com/allegro/bigcache/v3 v3.0.2
+	github.com/fatih/color v1.18.0
 	github.com/gin-gonic/gin v1.7.7
 	github.com/goccy/go-yaml v1.12.0
 	github.com/google/uuid v1.3.0
@@ -13,7 +14,6 @@ require (
 )
 
 require (
-	github.com/fatih/color v1.17.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect
