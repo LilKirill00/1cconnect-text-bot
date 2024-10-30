@@ -237,11 +237,11 @@ func (l *Levels) checkMenus() error {
 	// проверка меню и подуровней
 	for k, v := range l.Menu {
 		if len(v.Buttons) == 0 && v.DoButton == nil {
-			return fmt.Errorf("отсутствуют кнопки: %s %#v", k, v)
+			return fmt.Errorf("отсутствуют кнопки: %s {%s}", k, v.View())
 		}
 
 		if v.Buttons != nil && v.DoButton != nil {
-			return fmt.Errorf("нельзя использовать одновременно buttons и do_button: %s %#v", k, v)
+			return fmt.Errorf("нельзя использовать одновременно buttons и do_button: %s {%s}", k, v.View())
 		}
 
 		if v.Buttons != nil {

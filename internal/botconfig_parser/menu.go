@@ -129,10 +129,34 @@ type Button struct {
 	NestedMenu *NestedMenu `yaml:"menu"`
 }
 
+// добавить таб в начале каждой строки
+func tabLines(input, tabs string) string {
+	lines := strings.Split(input, "\n")
+	for i := range lines {
+		lines[i] = tabs + lines[i]
+	}
+	return strings.Join(lines, "\n")
+}
+
+func (b Menu) View() (btnStr string) {
+	btnStr += fmt.Sprintf("\nlen(Answer): %d", len(b.Answer))
+	btnStr += fmt.Sprintf("\nlen(Buttons): %d", len(b.Buttons))
+
+	if b.DoButton != nil {
+		btnStr += fmt.Sprintf("\nDoButton: {%s}", b.DoButton.View())
+	} else {
+		btnStr += "\nDoButton: nil"
+	}
+
+	btnStr += fmt.Sprintf("\nQnaDisable: %v", b.QnaDisable)
+
+	return fmt.Sprintf("%s\n", tabLines(btnStr, "\t"))
+}
+
 func (b Button) View() (btnStr string) {
-	btnStr += fmt.Sprintf("\n\tButtonID: %s", b.ButtonID)
-	btnStr += fmt.Sprintf("\n\tButtonText: %s", b.ButtonText)
-	btnStr += fmt.Sprintf("\n\tlen(Chat): %d", len(b.Chat))
+	btnStr += fmt.Sprintf("\nButtonID: %s", b.ButtonID)
+	btnStr += fmt.Sprintf("\nButtonText: %s", b.ButtonText)
+	btnStr += fmt.Sprintf("\nlen(Chat): %d", len(b.Chat))
 
 	btnCnf := make([]string, 0)
 	if b.CloseButton {
@@ -163,64 +187,56 @@ func (b Button) View() (btnStr string) {
 		btnCnf = append(btnCnf, "TicketButton")
 	}
 
-	btnStr += fmt.Sprintf("\n\tModifier: %v", btnCnf)
+	btnStr += fmt.Sprintf("\nModifier: %v", btnCnf)
 
-	btnStr += fmt.Sprintf("\n\tGoto: %s", b.Goto)
+	btnStr += fmt.Sprintf("\nGoto: %s", b.Goto)
 	if b.NestedMenu != nil {
-		btnStr += fmt.Sprintf("\n\tNestedMenu ID: %v", b.NestedMenu.ID)
+		btnStr += fmt.Sprintf("\nNestedMenu ID: %v", b.NestedMenu.ID)
 	}
 
-	return fmt.Sprintf("%s\n", btnStr)
+	return fmt.Sprintf("%s\n", tabLines(btnStr, "\t"))
 }
 
 func (b SaveToVar) View() (btnStr string) {
-	btnStr += fmt.Sprintf("\n\tVarName: %s", b.VarName)
-	btnStr += fmt.Sprintf("\n\tSendText: %s", *b.SendText)
-	btnStr += fmt.Sprintf("\n\tlen(OfferOptions): %d", len(b.OfferOptions))
-
-	tabLines := func(input, tabs string) string {
-		lines := strings.Split(input, "\n")
-		for i := range lines {
-			lines[i] = tabs + lines[i]
-		}
-		return strings.Join(lines, "\n")
-	}
+	btnStr += fmt.Sprintf("\nVarName: %s", b.VarName)
+	btnStr += fmt.Sprintf("\nSendText: %s", *b.SendText)
+	btnStr += fmt.Sprintf("\nlen(OfferOptions): %d", len(b.OfferOptions))
 
 	if b.DoButton != nil {
-		btnStr += fmt.Sprintf("\n\tDoButton: {%s}", tabLines(b.DoButton.View(), "\t"))
+		btnStr += fmt.Sprintf("\nDoButton: {%s}", b.DoButton.View())
 	} else {
-		btnStr += "\n\tDoButton: nil"
+		btnStr += "\nDoButton: nil"
 	}
 
-	return fmt.Sprintf("%s\n", btnStr)
+	return fmt.Sprintf("%s\n", tabLines(btnStr, "\t"))
 }
 
 func (b TicketButton) View() (btnStr string) {
-	btnStr += fmt.Sprintf("\n\tChannelID: %s", b.ChannelID)
-	btnStr += fmt.Sprintf("\n\tlen(TicketInfo): %d", len([]rune(b.TicketInfo)))
+	btnStr += fmt.Sprintf("\nChannelID: %s", b.ChannelID)
+	btnStr += fmt.Sprintf("\nlen(TicketInfo): %d", len([]rune(b.TicketInfo)))
 
 	formatPartTicket := func(fieldName string, pt *PartTicket) string {
 		if pt == nil {
-			return fmt.Sprintf("\n\t\t%s: nil", fieldName)
+			return fmt.Sprintf("\n%s: nil", fieldName)
 		}
 		defaultValue := "nil"
 		if pt.DefaultValue != nil {
 			defaultValue = *pt.DefaultValue
 		}
-		return fmt.Sprintf("\n\t\t%s: { Text: %s, DefaultValue: %s }", fieldName, pt.Text, defaultValue)
+		return fmt.Sprintf("\n%s: { Text: %s, DefaultValue: %s }", fieldName, pt.Text, defaultValue)
 	}
 
-	btnStr += "\n\tData: {"
-	btnStr += formatPartTicket("Theme", b.Data.Theme)
-	btnStr += formatPartTicket("Description", b.Data.Description)
-	btnStr += formatPartTicket("Executor", b.Data.Executor)
-	btnStr += formatPartTicket("Service", b.Data.Service)
-	btnStr += formatPartTicket("ServiceType", b.Data.ServiceType)
-	btnStr += "\n\t}"
+	btnStr += "\nData: {"
+	btnStr += tabLines(formatPartTicket("Theme", b.Data.Theme), "\t")
+	btnStr += tabLines(formatPartTicket("Description", b.Data.Description), "\t")
+	btnStr += tabLines(formatPartTicket("Executor", b.Data.Executor), "\t")
+	btnStr += tabLines(formatPartTicket("Service", b.Data.Service), "\t")
+	btnStr += tabLines(formatPartTicket("ServiceType", b.Data.ServiceType), "\t")
+	btnStr += "\n}"
 
-	btnStr += fmt.Sprintf("\n\tGoto: %s", b.Goto)
+	btnStr += fmt.Sprintf("\nGoto: %s", b.Goto)
 
-	return fmt.Sprintf("%s\n", btnStr)
+	return fmt.Sprintf("%s\n", tabLines(btnStr, "\t"))
 }
 
 type TicketButton struct {
