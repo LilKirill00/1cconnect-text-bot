@@ -276,7 +276,7 @@ menus:
           var_name: lon
           send_text: "Введите долготу" 
           do_button:  # lvl:3
-            exec_button: './scripts/example.sh {{ .User.UserId }} {{ .Var.lat }} {{ .Var.lon }}'
+            exec_button: './scripts/example.sh {{ .User.UserID }} {{ .Var.lat }} {{ .Var.lon }}'
 
 &сказать_спасибо
   chat:
@@ -577,7 +577,7 @@ buttons:
   - button:
       id: 3
       text: 'Выполнить команду на стороне сервера'
-      exec_button: "./scripts/example.sh {{ .User.UserId }} Имя: {{ .User.Name }}"
+      exec_button: "./scripts/example.sh {{ .User.UserID }} Имя: {{ .User.Name }}"
 ```
 
 В команду можно передать:
@@ -626,7 +626,7 @@ menus:
           text: 'Выполнить команду на стороне сервера'
           chat:
             - chat: "Уважаемый {{ .User.Name }}. Сейчас происходит обработка на стороне сервера, подождите немного"
-          exec_button: "./scripts/example.sh {{ .User.UserId }} {{ .User.Surname }} {{ .User.Name }}"
+          exec_button: "./scripts/example.sh {{ .User.UserID }} {{ .User.Surname }} {{ .User.Name }}"
 ```
 
 ### Как получить и сохранить текст введенный пользователем
@@ -665,7 +665,7 @@ menus:
           goto: start
       - button:
           text: "Подтвердить"
-          exec_button: './scripts/example.sh {{ .User.UserId }} {{ .Var.lat }} {{ .Var.lon }}'
+          exec_button: './scripts/example.sh {{ .User.UserID }} {{ .Var.lat }} {{ .Var.lon }}'
 ```
 
 Параметры `save_to_var`:
