@@ -457,11 +457,11 @@ buttons:
 |----------|----------|----------|
 |Меню|start|start|
 |2.1|lvl_2.1|start|
-|Назад|start|lvl_2.1|
-|2.1|lvl_2.1|start|
 |3.1|lvl_3.1|lvl_2.1|
-|Назад|lvl_2.1|lvl_3.1|
+|Перейти в goto_example|goto_example|lvl_3.1|
 |Назад|lvl_3.1|lvl_2.1|
+|Назад|lvl_2.1|start|
+|Назад|start|start|
 
 ```yaml
 menus:
@@ -488,43 +488,18 @@ menus:
                     buttons: # lvl:3  
                       - button:
                           text: "Назад"
-                          back_button: true 
-```
-
-Если есть необходимость реализовать переход с последнего уровня до первого уровня, то необходимо придерживаться простых правил:
-- если уровень не последний в цепочке, то используйте `goto`
-- если последний, то можете использовать `back_button` вместо `goto`
-
-Пример как реализовать кнопку "Назад" с последнего уровня до start:
-
-```yaml
-menus:
-  start:
-    answer:
-      - chat: "Выберите пункт меню"
-    buttons: # lvl:1
-      - button: 
-          text: '2.1'
-          menu:
-            id: 'lvl_2.1'
-            answer:
-              - chat: "Вы на уровне 2.1"
-            buttons: # lvl:2
-              - button:
-                  text: "Назад"
-                  goto: 'start' # указываем переход на lvl:1
-              - button:
-                  text: '3.1'
-                  menu:
-                    id: 'lvl_3.1'
-                    answer:
-                      - chat: "Вы на уровне 3.1"
-                    buttons: # lvl:3  
+                          back_button: true
                       - button:
-                          text: "Назад"
-                          # на последнем уровне можно использовать back_button либо также как раньше goto на предыдущий уровень
-                          back_button: true 
-                          # `back_button: true` в данном примере можно заменить на `goto: 'lvl_2.1'`
+                          text: "Перейти в goto_example"
+                          goto: "goto_example"
+
+  goto_example:
+    answer:
+      - chat: 'Вы попали в goto_example'
+    buttons:
+      - button:
+          text: "Назад"
+          back_button: true
 ```
 
 ### Как перевести на свободного специалиста

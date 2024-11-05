@@ -56,6 +56,8 @@ func Receive(c *gin.Context) {
 		if err != nil {
 			logger.Warning("Error changeState", err)
 		}
+
+		logger.Debug("Cache:", chatState)
 	}(cCp, msg)
 
 	c.Status(http.StatusOK)
@@ -187,7 +189,12 @@ func SendAnswer(c *gin.Context, msg *messages.Message, chatState *messages.Chat,
 
 	// выполнить действие do_button если не было ошибок и есть такая настройка
 	if err == nil && menu.Menu[goTo].DoButton != nil {
-		return triggerButton(c, msg, chatState, menu, menu.Menu[goTo].DoButton)
+		if menu.Menu[goTo].DoButton.NestedMenu != nil {
+			return SendAnswer(c, msg, chatState, menu, menu.Menu[goTo].DoButton.NestedMenu.ID, err)
+		}
+		gt, err := triggerButton(c, msg, chatState, menu, menu.Menu[goTo].DoButton)
+		chatState.HistoryStateAppend(gt)
+		return gt, err
 	}
 	return goTo, err
 }
@@ -453,10 +460,11 @@ func prevStageTicketButton(c *gin.Context, msg *messages.Message, chatState *mes
 }
 
 // Проверить нажата ли BackButton
-func getGoToIfClickedBackBtn(btn *botconfig_parser.Button, state messages.Chat) (goTo string) {
+func getGoToIfClickedBackBtn(btn *botconfig_parser.Button, chatState *messages.Chat) (goTo string) {
 	if btn != nil && btn.BackButton {
-		if state.PreviousState != database.GREETINGS {
-			goTo = state.PreviousState
+		chatState.HistoryStateBack()
+		if chatState.PreviousState != database.GREETINGS {
+			goTo = chatState.PreviousState
 		} else {
 			goTo = database.START
 		}
@@ -478,6 +486,7 @@ func processMessage(c *gin.Context, msg *messages.Message, chatState *messages.C
 		if chatState.CurrentState == database.START {
 			return chatState.CurrentState, nil
 		}
+		chatState.HistoryStateClear()
 		return database.GREETINGS, nil
 
 	// Нажатие меню ИЛИ Любое сообщение (текст, файл, попытка звонка).
@@ -487,10 +496,12 @@ func processMessage(c *gin.Context, msg *messages.Message, chatState *messages.C
 		messages.MESSAGE_TREATMENT_CLOSE,
 		messages.MESSAGE_TREATMENT_CLOSE_ACTIVE:
 		err = msg.Start(cnf)
+		chatState.HistoryStateClear()
 		return database.GREETINGS, err
 
 	case messages.MESSAGE_NO_FREE_SPECIALISTS:
 		err = msg.RerouteTreatment(c)
+		chatState.HistoryStateClear()
 		return database.GREETINGS, err
 
 	// Пользователь отправил сообщение.
@@ -527,7 +538,7 @@ func processMessage(c *gin.Context, msg *messages.Message, chatState *messages.C
 			ticket := database.Ticket{}
 
 			// переходим если нажата BackButton
-			goTo := getGoToIfClickedBackBtn(btn, state)
+			goTo := getGoToIfClickedBackBtn(btn, chatState)
 			if goTo != "" {
 				// перейти в определенное меню если настроен параметр goto
 				if tBtn.Goto != "" {
@@ -699,13 +710,15 @@ func processMessage(c *gin.Context, msg *messages.Message, chatState *messages.C
 
 			// переходим если нажата BackButton
 			btn := menu.GetButton(state.CurrentState, text)
-			goTo := getGoToIfClickedBackBtn(btn, state)
+			goTo := getGoToIfClickedBackBtn(btn, chatState)
 			if goTo != "" {
 				return SendAnswer(c, msg, chatState, menu, goTo, err)
 			}
 
 			// выполнить действие кнопки
-			return triggerButton(c, msg, chatState, menu, state.SavedButton)
+			gt, err := triggerButton(c, msg, chatState, menu, state.SavedButton)
+			chatState.HistoryStateAppend(gt)
+			return gt, err
 
 		default:
 			state := msg.GetState(c)
@@ -728,7 +741,9 @@ func processMessage(c *gin.Context, msg *messages.Message, chatState *messages.C
 			}
 
 			if btn != nil {
-				return triggerButton(c, msg, chatState, menu, btn)
+				gt, err := triggerButton(c, msg, chatState, menu, btn)
+				chatState.HistoryStateAppend(gt)
+				return gt, err
 			} else { // Произвольный текст
 				if !cm.QnaDisable && menu.UseQNA.Enabled {
 					return qnaResponse(c, msg, chatState, cnf, menu, currentMenu)
@@ -770,12 +785,14 @@ func qnaResponse(c *gin.Context, msg *messages.Message, chatState *messages.Chat
 
 // выполнить действие кнопки
 func triggerButton(c *gin.Context, msg *messages.Message, chatState *messages.Chat, menu *botconfig_parser.Levels, btn *botconfig_parser.Button) (string, error) {
-	state := msg.GetState(c)
+	if btn == nil {
+		return finalSend(c, msg, chatState, "", fmt.Errorf("Кнопка не передана в triggerButton"))
+	}
 
 	var err error
 
 	goTo := btn.Goto
-	if gt := getGoToIfClickedBackBtn(btn, state); gt != "" {
+	if gt := getGoToIfClickedBackBtn(btn, chatState); gt != "" {
 		goTo = gt
 	}
 
@@ -979,6 +996,7 @@ func finalSend(c *gin.Context, msg *messages.Message, chatState *messages.Chat, 
 	// чистим данные чтобы избежать повторных ошибок
 	_ = msg.ClearCacheOmitemptyFields(c, chatState)
 
+	chatState.HistoryStateClear()
 	return SendAnswer(c, msg, chatState, menu, database.FINAL, err)
 }
 

@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/allegro/bigcache/v3"
 	"github.com/gin-gonic/gin"
@@ -17,6 +18,8 @@ import (
 type (
 	// набор данных привязываемые к пользователю бота
 	Chat struct {
+		// история состояний от start до где щас пользователь
+		HistoryState []string `json:"history_state"`
 		// предыдущее состояние
 		PreviousState string `json:"prev_state" binding:"required" example:"100"`
 		// текущее состояние
@@ -111,6 +114,7 @@ func (msg *Message) ChangeCacheState(c *gin.Context, chatState *Chat, toState st
 
 	chatState.PreviousState = chatState.CurrentState
 	chatState.CurrentState = toState
+	chatState.HistoryStateAppend(toState)
 
 	return msg.ChangeCache(c, chatState)
 }
@@ -183,4 +187,48 @@ func (msg *Message) SaveUserDataInCache(c *gin.Context, chatState *Chat) (err er
 
 	chatState.User = userData
 	return
+}
+
+// вернуться на предыдущий пункт меню в истории
+func (chatState *Chat) HistoryStateBack() {
+	// если истории нет то мы в старт должны быть
+	if len(chatState.HistoryState) == 0 {
+		chatState.PreviousState = database.GREETINGS
+		return
+	}
+
+	// удаление последнего меню в истории
+	lastIndex := len(chatState.HistoryState) - 1
+	chatState.HistoryState = chatState.HistoryState[:lastIndex]
+
+	// если после удаления последнего меню не осталось истории
+	if len(chatState.HistoryState) == 0 {
+		chatState.PreviousState = database.GREETINGS
+		return
+	}
+	chatState.PreviousState = chatState.HistoryState[lastIndex-1]
+}
+
+// добавить новый пункт меню в историю
+func (chatState *Chat) HistoryStateAppend(state string) {
+	// чистим историю если меню последнее должно быть
+	if slices.Contains([]string{database.FAIL_QNA, database.FINAL, database.START, database.GREETINGS}, state) {
+		chatState.HistoryStateClear()
+		return
+	}
+
+	// игнорируем добавление если спец кнопка
+	if slices.Contains([]string{database.CREATE_TICKET, database.CREATE_TICKET_PREV_STAGE, database.WAIT_SEND}, state) {
+		return
+	}
+
+	// если история пустая или последний элемент совпадает с переданным
+	if len(chatState.HistoryState) == 0 || chatState.HistoryState[len(chatState.HistoryState)-1] != state {
+		chatState.HistoryState = append(chatState.HistoryState, state)
+	}
+}
+
+// очистить историю
+func (chatState *Chat) HistoryStateClear() {
+	chatState.HistoryState = []string{}
 }
