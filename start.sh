@@ -1,2 +1,2 @@
 ./build.sh
-./connect-text-bot $1
+./connect-text-bot "$@"
