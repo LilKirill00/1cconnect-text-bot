@@ -34,7 +34,6 @@ func main() {
 	flag.Parse()
 
 	config.GetConfig(*configFile, cnf)
-	cnf.RunInDebug = *debug
 	cnf.BotConfig = *botConfig
 
 	logFile := logger.InitLogger(*debug, loggerConfig)
