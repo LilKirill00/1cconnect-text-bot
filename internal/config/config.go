@@ -8,8 +8,6 @@ import (
 type (
 	// configuration contains the application settings
 	Conf struct {
-		RunInDebug bool `yaml:"debug"`
-
 		Server Server `yaml:"server"`
 
 		Connect Connect `yaml:"connect"`
