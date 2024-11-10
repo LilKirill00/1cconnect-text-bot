@@ -6,6 +6,7 @@ import (
 	"connect-text-bot/internal/config"
 	"connect-text-bot/internal/database"
 	"connect-text-bot/internal/logger"
+	"connect-text-bot/internal/us"
 	"context"
 	"flag"
 	"log"
@@ -55,6 +56,8 @@ func main() {
 		database.InjectInMemoryCache("cache", cache),
 		botconfig_parser.InjectLevels("menus", menus),
 		gin.LoggerWithWriter(logFile),
+		us.Inject(cnf.UsServer, cnf.Connect.Login, cnf.Connect.Password),
+		us.InjectMTOM(cnf.UsServer, cnf.Connect.Login, cnf.Connect.Password),
 	)
 
 	bot.InitHooks(app, cnf)
@@ -143,7 +146,7 @@ func main() {
 			case syscall.SIGHUP, syscall.SIGINT:
 				logger.Info("Catch OS signal! Exiting...")
 
-				bot.DestroyHooks(cnf)
+				bot.DestroyHooks()
 
 				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				defer cancel()
