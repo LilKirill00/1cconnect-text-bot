@@ -460,9 +460,12 @@ func prevStageTicketButton(c *gin.Context, msg *messages.Message, chatState *mes
 }
 
 // Проверить нажата ли BackButton
-func getGoToIfClickedBackBtn(btn *botconfig_parser.Button, chatState *messages.Chat) (goTo string) {
+func getGoToIfClickedBackBtn(btn *botconfig_parser.Button, chatState *messages.Chat, ignoreHistoryBack bool) (goTo string) {
 	if btn != nil && btn.BackButton {
-		chatState.HistoryStateBack()
+		if !ignoreHistoryBack {
+			chatState.HistoryStateBack()
+		}
+
 		if chatState.PreviousState != database.GREETINGS {
 			goTo = chatState.PreviousState
 		} else {
@@ -538,7 +541,7 @@ func processMessage(c *gin.Context, msg *messages.Message, chatState *messages.C
 			ticket := database.Ticket{}
 
 			// переходим если нажата BackButton
-			goTo := getGoToIfClickedBackBtn(btn, chatState)
+			goTo := getGoToIfClickedBackBtn(btn, chatState, true)
 			if goTo != "" {
 				// перейти в определенное меню если настроен параметр goto
 				if tBtn.Goto != "" {
@@ -710,7 +713,7 @@ func processMessage(c *gin.Context, msg *messages.Message, chatState *messages.C
 
 			// переходим если нажата BackButton
 			btn := menu.GetButton(state.CurrentState, text)
-			goTo := getGoToIfClickedBackBtn(btn, chatState)
+			goTo := getGoToIfClickedBackBtn(btn, chatState, true)
 			if goTo != "" {
 				return SendAnswer(c, msg, chatState, menu, goTo, err)
 			}
@@ -792,7 +795,7 @@ func triggerButton(c *gin.Context, msg *messages.Message, chatState *messages.Ch
 	var err error
 
 	goTo := btn.Goto
-	if gt := getGoToIfClickedBackBtn(btn, chatState); gt != "" {
+	if gt := getGoToIfClickedBackBtn(btn, chatState, false); gt != "" {
 		goTo = gt
 	}
 
