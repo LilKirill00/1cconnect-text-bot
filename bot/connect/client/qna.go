@@ -1,7 +1,7 @@
 package client
 
 import (
-	"connect-text-bot/bot/structures/messages"
+	"connect-text-bot/bot/connect/messages"
 	"connect-text-bot/internal/logger"
 	"context"
 	"encoding/json"

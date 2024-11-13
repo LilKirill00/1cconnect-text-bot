@@ -1,8 +1,8 @@
 package cache
 
 import (
-	"connect-text-bot/bot/client"
-	"connect-text-bot/bot/structures/response"
+	"connect-text-bot/bot/connect/client"
+	"connect-text-bot/bot/connect/response"
 	"connect-text-bot/internal/botconfig_parser"
 	"connect-text-bot/internal/database"
 	"connect-text-bot/internal/logger"

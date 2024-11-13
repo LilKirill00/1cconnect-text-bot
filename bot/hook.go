@@ -1,7 +1,7 @@
 package bot
 
 import (
-	"connect-text-bot/bot/client"
+	"connect-text-bot/bot/connect/client"
 	"connect-text-bot/internal/config"
 	"connect-text-bot/internal/logger"
 

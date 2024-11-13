@@ -1,7 +1,7 @@
 package bot
 
 import (
-	"connect-text-bot/bot/client"
+	"connect-text-bot/bot/connect/client"
 
 	"github.com/google/uuid"
 )

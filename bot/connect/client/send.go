@@ -2,7 +2,7 @@ package client
 
 import (
 	"bytes"
-	"connect-text-bot/bot/structures/requests"
+	"connect-text-bot/bot/connect/requests"
 	"context"
 	"encoding/json"
 	"io"

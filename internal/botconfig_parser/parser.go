@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	"connect-text-bot/bot/structures/requests"
+	"connect-text-bot/bot/connect/requests"
 	"connect-text-bot/internal/database"
 	"connect-text-bot/internal/logger"
 

@@ -1,7 +1,7 @@
 package client
 
 import (
-	"connect-text-bot/bot/structures/requests"
+	"connect-text-bot/bot/connect/requests"
 	"context"
 	"encoding/json"
 	"net/http"
