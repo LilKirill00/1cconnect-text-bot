@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"connect-text-bot/bot/cache"
-	"connect-text-bot/bot/client"
 	"connect-text-bot/bot/structures/messages"
 	"connect-text-bot/bot/structures/requests"
 	"connect-text-bot/bot/structures/response"
@@ -24,6 +23,7 @@ import (
 	"connect-text-bot/internal/config"
 	"connect-text-bot/internal/database"
 	"connect-text-bot/internal/logger"
+	"connect-text-bot/internal/us"
 
 	"github.com/allegro/bigcache/v3"
 	"github.com/gin-gonic/gin"
@@ -683,7 +683,7 @@ func processMessage(md *MultiData) (string, error) {
 					_ = bot.connect.Send(ctx, msg.UserID, cnf.SpecID, "Заявка регистрируется, ожидайте...", nil)
 
 					// регистрируем заявку
-					r, err := client.ServiceRequestAdd(ctx, md.soapcl, msg.UserID, msg.LineID, chatState.GetCacheTicket())
+					r, err := us.CreateTicket(ctx, md.soapcl, msg.UserID, msg.LineID, chatState.GetCacheTicket())
 					if err != nil {
 						return finalSend(ctx, md, "", err)
 					}
