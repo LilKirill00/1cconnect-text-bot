@@ -9,14 +9,13 @@ import (
 	"strings"
 	"sync"
 
-	"connect-text-bot/bot/connect/requests"
+	"connect-text-bot/internal/connect/requests"
 	"connect-text-bot/internal/database"
 	"connect-text-bot/internal/logger"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-
 	"github.com/goccy/go-yaml"
+	"github.com/google/uuid"
 )
 
 var lock = &sync.RWMutex{}

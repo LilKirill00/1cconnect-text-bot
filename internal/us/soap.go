@@ -1,8 +1,9 @@
 package us
 
 import (
-	"connect-text-bot/internal/database"
 	"context"
+
+	"connect-text-bot/internal/database"
 
 	"github.com/google/uuid"
 	"github.com/hooklift/gowsdl/soap"

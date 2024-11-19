@@ -1,11 +1,12 @@
 package client
 
 import (
-	"connect-text-bot/bot/connect/messages"
-	"connect-text-bot/internal/logger"
 	"context"
 	"encoding/json"
 	"net/http"
+
+	"connect-text-bot/internal/connect/messages"
+	"connect-text-bot/internal/logger"
 
 	"github.com/google/uuid"
 )

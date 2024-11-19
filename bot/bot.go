@@ -2,15 +2,6 @@ package bot
 
 import (
 	"bytes"
-	"connect-text-bot/bot/cache"
-	"connect-text-bot/bot/connect/messages"
-	"connect-text-bot/bot/connect/requests"
-	"connect-text-bot/bot/connect/response"
-	"connect-text-bot/internal/botconfig_parser"
-	"connect-text-bot/internal/config"
-	"connect-text-bot/internal/database"
-	"connect-text-bot/internal/logger"
-	"connect-text-bot/internal/us"
 	"context"
 	"errors"
 	"fmt"
@@ -23,6 +14,16 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"connect-text-bot/internal/botconfig_parser"
+	"connect-text-bot/internal/cache"
+	"connect-text-bot/internal/config"
+	"connect-text-bot/internal/connect/messages"
+	"connect-text-bot/internal/connect/requests"
+	"connect-text-bot/internal/connect/response"
+	"connect-text-bot/internal/database"
+	"connect-text-bot/internal/logger"
+	"connect-text-bot/internal/us"
 
 	"github.com/allegro/bigcache/v3"
 	"github.com/gin-gonic/gin"

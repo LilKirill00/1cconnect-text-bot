@@ -2,7 +2,6 @@ package client
 
 import (
 	"bytes"
-	"connect-text-bot/bot/connect/requests"
 	"context"
 	"encoding/json"
 	"io"
@@ -11,6 +10,8 @@ import (
 	"net/textproto"
 	"os"
 	"path/filepath"
+
+	"connect-text-bot/internal/connect/requests"
 
 	"github.com/google/uuid"
 )

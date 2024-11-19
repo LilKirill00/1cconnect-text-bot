@@ -1,14 +1,15 @@
 package cache
 
 import (
-	"connect-text-bot/bot/connect/client"
-	"connect-text-bot/internal/botconfig_parser"
-	"connect-text-bot/internal/database"
-	"connect-text-bot/internal/logger"
 	"context"
 	"encoding/json"
 	"fmt"
 	"slices"
+
+	"connect-text-bot/internal/botconfig_parser"
+	"connect-text-bot/internal/connect/client"
+	"connect-text-bot/internal/database"
+	"connect-text-bot/internal/logger"
 
 	"github.com/allegro/bigcache/v3"
 	"github.com/google/uuid"

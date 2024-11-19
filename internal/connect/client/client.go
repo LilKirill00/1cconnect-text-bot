@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"connect-text-bot/bot/connect/requests"
+	"connect-text-bot/internal/connect/requests"
 	"connect-text-bot/internal/logger"
 
 	"github.com/google/uuid"

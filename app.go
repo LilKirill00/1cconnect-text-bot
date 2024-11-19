@@ -1,12 +1,6 @@
 package main
 
 import (
-	"connect-text-bot/bot"
-	"connect-text-bot/internal/botconfig_parser"
-	"connect-text-bot/internal/config"
-	"connect-text-bot/internal/database"
-	"connect-text-bot/internal/logger"
-	"connect-text-bot/internal/us"
 	"context"
 	"flag"
 	"log"
@@ -17,6 +11,13 @@ import (
 	"path/filepath"
 	"syscall"
 	"time"
+
+	"connect-text-bot/bot"
+	"connect-text-bot/internal/botconfig_parser"
+	"connect-text-bot/internal/config"
+	"connect-text-bot/internal/database"
+	"connect-text-bot/internal/logger"
+	"connect-text-bot/internal/us"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/fsnotify.v1"

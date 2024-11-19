@@ -1,11 +1,12 @@
 package client
 
 import (
-	"connect-text-bot/bot/connect/requests"
 	"context"
 	"encoding/json"
 	"net/http"
 	"time"
+
+	"connect-text-bot/internal/connect/requests"
 
 	"github.com/google/uuid"
 )
